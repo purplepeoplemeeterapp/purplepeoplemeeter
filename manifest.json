@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "Purple People Meeter",
-    "version": "1.0.0",
+    "version": "1.0.2",
 
     "action": {
       "default_title": "Click to open the Purple People Meeter menu to configure this live stream"
@@ -57,7 +57,7 @@
           "political.json",
           "negative.json"
         ],
-        "matches": ["*://*/*"]
+        "matches": ["https://www.twitch.tv/*", "https://m.twitch.tv/*"]
       }
     ],
 

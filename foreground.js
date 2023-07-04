@@ -40,6 +40,50 @@ function scbt_get_classString_for_chat(obj) {
   if (obj.verified === 1) {
     x = x + ' verified vip ';
   }
+  if (obj.gifter === 1) {
+    x = x + ' gifter ';
+  }
+  if (obj.founder === 1) {
+    x = x + ' founder ';
+  }
+  if (obj.og === 1) {
+    x = x + ' og ';
+  }
+  return x;
+}
+
+
+function scbt_get_classString_for_chat_replay(arr) {
+  var x = '';
+  if (arr) {
+    if (arr[5] == 1) {
+      x = x + ' sub ';
+    }
+    if (arr[6] == 1) {
+      x = x + ' moderator ';
+    }
+    if (arr[7] == 1) {
+      x = x + ' owner ';
+    }
+    if (arr[8] == 1) {
+      x = x + ' donation ';
+    }
+    if (arr[9] == 1) {
+      x = x + ' newSub ';
+    }
+    if (arr[10] == 1) {
+      x = x + ' verified vip ';
+    }
+    if (arr[11] == 1) {
+      x = x + ' gifter ';
+    }
+    if (arr[12] == 1) {
+      x = x + ' founder ';
+    }
+    if (arr[13] == 1) {
+      x = x + ' og ';
+    }
+  }
   return x;
 }
 
@@ -86,7 +130,7 @@ function scbt_get_db(dbName) {
   var indexedDB = window.indexedDB || window.webkitIndexedDB || window.mozIndexedDB || window.msIndexedDB;
   if (indexedDB) { } else {
     console.error('Error: chat database not supported');
-    setTimeout(function(){ scbt_helper_toast('Error: chat database not supported'); }, 500);
+    setTimeout(function(){ scbt_helper_toast('Error: chat database not supported'); }, 2700);
     return false;
   }
 
@@ -94,7 +138,7 @@ function scbt_get_db(dbName) {
   x.onerror = function (e) {
     console.error('Error: getting and displaying saved chat failed');
     console.error(e);
-    setTimeout(function(){ scbt_helper_toast('Error: getting and displaying saved chat failed'); }, 500);
+    setTimeout(function(){ scbt_helper_toast('Error: getting and displaying saved chat failed'); }, 2700);
   };
 
   x.onupgradeneeded = function(e) {
@@ -103,7 +147,8 @@ function scbt_get_db(dbName) {
       keyPath: 'id',
       autoIncrement: true,
     });
-    store.createIndex('itemid', 'itemid', {unique: true});
+    
+    store.createIndex('itemid', 'itemid', {unique: false});
     store.createIndex('timestamp', 'timestamp', {unique: false});
     store.createIndex('username', 'username', {unique: false});
     store.createIndex('message', 'message', {unique: false});
@@ -113,6 +158,10 @@ function scbt_get_db(dbName) {
     store.createIndex('donation', 'donation', {unique: false});
     store.createIndex('newSub', 'newSub', {unique: false});
     store.createIndex('verified', 'verified', {unique: false});
+    store.createIndex('gifter', 'gifter', {unique: false});
+    store.createIndex('founder', 'founder', {unique: false});
+    store.createIndex('og', 'og', {unique: false});
+
   };
   return x;
 }
@@ -165,6 +214,9 @@ function scbt_get_db_name() {
             obj.donation = 0;
             obj.newSub = 0;
             obj.verified = 0;
+            obj.gifter = 0;
+            obj.founder = 0;
+            obj.og = 0;
 
             var db = request.result;
             var transaction = db.transaction('chat', 'readwrite');
@@ -234,6 +286,7 @@ function scbt_get_sort_times(array) {
   if (array[1].timestamp.indexOf(':') < 0) {
     return array;
   }
+
   return array.sort(function (a, b) {
     if (parseInt(a.timestamp.split(':')[0]) - parseInt(b.timestamp.split(':')[0]) === 0) {
       return parseInt(a.timestamp.split(':')[1]) - parseInt(b.timestamp.split(':')[1]);
@@ -277,7 +330,8 @@ function scbt_helper_build_all_menus(a,b,c) {
   var x = document.getElementById('scbtOptionsMenu');
   if (x) { } else { 
     scbt_helper_get_menu(window.scbtXRef, 'scbtOptionsMenu', 'options_menu.html'); 
-    scbt_helper_toast(window.scbtService + ' Purple People Meeter loaded, RUNNING version: ' + chrome.runtime.getManifest().version); 
+    scbt_helper_toast(window.scbtService + ' Purple People Meeter loaded, RUNNING version: ' + chrome.runtime.getManifest().version);
+    console.log(' Purple People Meeter loaded, RUNNING version: ' + chrome.runtime.getManifest().version);
   }
 
   var y = document.getElementById('scbtToggleButton2');
@@ -308,7 +362,7 @@ function scbt_helper_build_chat_by_id(dbName, service, channelId, videoID) {
         request = null; chats = null; classString = null; newElement = null; db = null; transaction = null; objectStore = null;
         return false;
       } else {
-        scbt_helper_toast(' this stream chat not found for display');
+        scbt_helper_toast('Error: this stream chat not found for display');
         return false;
       }
     };
@@ -396,9 +450,12 @@ function scbt_helper_chat_blur(div) {
 
 
 function scbt_helper_chat_clean(obj, div) {
+  var special = false;
+
   if (div.classList.contains('user-notice-line') ) {
     obj.newSub = 1;
-    obj.timestamp = '0:01';     
+    obj.timestamp = '0:01';
+    special = true;
   }
 
   var imgs = div.querySelectorAll('img');
@@ -428,7 +485,7 @@ function scbt_helper_chat_clean(obj, div) {
   obj = scbt_get_clean_message(obj);
 
   if (obj.timestamp) { } else {
-    obj.timestamp = '0:02';
+    obj.timestamp = '0:10';
   }
 
   if ( (obj.timestamp) && (obj.username) && (obj.message) ) {
@@ -507,57 +564,79 @@ function scbt_helper_chat_get_message(obj, div) {
 }
 
 
-function scbt_helper_chat_filter_blocked_words(obj, div) {
-  // I do not want to see these words in chat. Comma separated list. Example: rat,mouse,vermin 
-  var messageDivs = scbt_get_chat_messages();
-  var arr = window.scbtOptions.scbthidden7.split(',');
-  var arrLength = arr.length;
-
-  [].forEach.call(messageDivs, function(chat) {
-    if (chat.innerText) {
-      var t = chat.innerText;
-      tm = t.toLowerCase();
-      tm = tm.trim();
-      for (var i = 0; i < arrLength; i++) {
-        var y = arr[i];
-        y = y.toLowerCase();
-        y = y.trim();
-        if (tm.indexOf(y) > -1 ) {
-          var regexp = new RegExp(y, 'gi');
-          var str = tm.replace(regexp, ' xxx ');
-          tm = str;
+function scbt_helper_chat_filter_blocked_links(obj, div) {
+  var messageDivs = div.querySelectorAll('.text-fragment, .mention-fragment, .user-notice-line, .chat-line__message--cheer-amount');
+  if (messageDivs) {
+    [].forEach.call(messageDivs, function(messageDiv) {
+      var x = messageDiv.innerText;
+      if (x) {
+        if ( (x.indexOf('http') > -1 ) || (x.indexOf('.com') > -1 ) || (x.indexOf('xxx') > -1 ) ) {
+          messageDiv.innerText = '---';
+          obj.message = '---';
         }
       }
-      chat.innerText = tm;
+    });
+  }
+  messageDivs = messageDiv = x = div = null; return obj;
+}
+
+
+function scbt_helper_chat_filter_blocked_words(obj, div) {
+  var arr1 = [];
+  if (window.scbtBlockedWords.length > 0) {
+    arr1 = window.scbtBlockedWords;
+  }
+  if (obj.timestamp == '1234' || obj.timestamp == '12345' || obj.timestamp == '12346' || obj.timestamp == '1234567') {
+    return obj;
+  }
+  // I do not want to see these words in chat. Comma separated list. Example: rat,mouse,vermin 
+  var messageDiv = obj.message;
+  if (messageDiv) {
+    var t = messageDiv;
+    if (t) {
+      t = t.toLowerCase();
+      t = t.trim();
+      var arr2 = window.scbtOptions.scbthidden7.split(',');
+      var fullArray = arr1.concat(arr2);
+      var arrl = fullArray.length;
+      for (var i = 0; i < arrl; i++) {
+        var y = fullArray[i];
+        y = y.toLowerCase();
+        // y = y.trim();
+        // console.log("if " + t + " contains " + y);
+        if (t.indexOf(y) > -1 ) {
+          var regexp = new RegExp(y, 'gi');
+          var cleaned = t.replace(regexp, ' xxx ');
+          obj.message = cleaned;
+          div.innerText = cleaned;
+          regexp = null; cleaned = null; 
+        }
+      }
     }
-  });
-  messageDivs = null; t = null; tm = null; arr = null; arrLength = null; y = null; regexp = null; str = null; return false;
+  }
+  var t = arr1 = arr2 = fullArray = arrl = y = messageDiv = div = null; return obj;
 }
 
 
 function scbt_helper_chat_filter_highlighted_words(obj, div) {
   // Highlight these words in chat in big letters. Comma separated list. Example: fun,happy
-  var messageDivs = scbt_get_chat_messages();
-  var arr = window.scbtOptions.scbthighlighted7.split(',');
-  var arrLength = arr.length;
-
-  [].forEach.call(messageDivs, function(chat) {
-    if (chat.innerText) {
-      var t = chat.innerText;
-      tm = t.toLowerCase();
-      tm = tm.trim();
-      for (var i = 0; i < arrLength; i++) {
-        var y = arr[i];
-        y = y.toLowerCase();
-        y = y.trim();
-        if (tm.indexOf(y) > -1 ) {
-          chat.style.setProperty('font-size', '4rem', 'important');
-          chat.style.setProperty('line-height', '1', 'important');  
-        }
+  var t = obj.message;
+  if (t) {
+    tm = t.toLowerCase();
+    tm = tm.trim();
+    var arr = window.scbtOptions.scbthighlighted7.split(',');
+    var arrl = arr.length;
+    for (var i = 0; i < arrl; i++) {
+      var y = arr[i];
+      y = y.toLowerCase();
+      y = y.trim();
+      if (tm.indexOf(y) > -1 ) {
+        div.style.setProperty('font-size', '3rem', 'important');
+        div.style.setProperty('line-height', '1', 'important');  
       }
     }
-  });
-  messageDivs = null; messageDiv = null; t = null; tm = null; arr = null; arrLength = null; y = null; regexp = null; str = null; return false;
+  }
+  var t = arr = arrl = y = i = div = tm = null; return obj;
 }
 
 
@@ -794,7 +873,6 @@ function scbt_helper_chat_record() {
     }
   }
   if (targetNode) {
-    scbt_helper_toast('chat loaded');
     var config = { childList: true,
                  attributes: false,
                  characterData: false,
@@ -909,8 +987,8 @@ function scbt_helper_csv_download(blob, filename) {
 
 
 function scbt_helper_csv_import_chat_log(filename, chats) {
-  scbt_helper_toast(' starting to import chat');
-  if (filename && chats) { } else {  scbt_helper_toast(' chat not found to import'); return false; }
+  scbt_helper_toast('Status: starting to import chat');
+  if (filename && chats) { } else {  scbt_helper_toast('Error: chat not found to import'); return false; }
 
   var fileNameArr = filename.split('-chatlog');
   fileNameArr = fileNameArr[0];
@@ -944,6 +1022,9 @@ function scbt_helper_csv_import_chat_log(filename, chats) {
           chatObj.donation = Number(chats[i][7]);
           chatObj.newSub = Number(chats[i][8]);
           chatObj.verified = Number(chats[i][9]);
+          chatObj.gifter = Number(chats[i][10]);
+          chatObj.founder = Number(chats[i][11]);
+          chatObj.og = Number(chats[i][12]);
           chatObjArr.push(chatObj);
           chatObj = {};
         }
@@ -1490,6 +1571,50 @@ function scbt_helper_save_options() {
     });
   }
 
+  var scbthidden11 = document.getElementById('scbthidden11'); // hide sexual or body words in chat.
+  if (scbthidden11) {
+    scbthidden11.addEventListener('change', e => {
+      if (e.target.checked) {
+        chrome.storage.sync.set({'scbthidden11': true}, function() { window.scbtOptions.scbthidden11 = true; });
+      } else {
+        chrome.storage.sync.set({'scbthidden11': false}, function() { window.scbtOptions.scbthidden11 = false; });
+      }
+    });
+  }
+
+  var scbthidden12 = document.getElementById('scbthidden12'); // hide profanity in chat
+  if (scbthidden12) {
+    scbthidden12.addEventListener('change', e => {
+      if (e.target.checked) {
+        chrome.storage.sync.set({'scbthidden12': true}, function() { window.scbtOptions.scbthidden12 = true; });
+      } else {
+        chrome.storage.sync.set({'scbthidden12': false}, function() { window.scbtOptions.scbthidden12 = false; });
+      }
+    });
+  }
+
+  var scbthidden13 = document.getElementById('scbthidden13'); // hide USA political words in chat
+  if (scbthidden13) {
+    scbthidden13.addEventListener('change', e => {
+      if (e.target.checked) {
+        chrome.storage.sync.set({'scbthidden13': true}, function() { window.scbtOptions.scbthidden13 = true; });
+      } else {
+        chrome.storage.sync.set({'scbthidden13': false}, function() { window.scbtOptions.scbthidden13 = false; });
+      }
+    });
+  }
+
+  var scbthidden14 = document.getElementById('scbthidden14'); // hide negative words in chat
+  if (scbthidden14) {
+    scbthidden14.addEventListener('change', e => {
+      if (e.target.checked) {
+        chrome.storage.sync.set({'scbthidden14': true}, function() { window.scbtOptions.scbthidden14 = true; });
+      } else {
+        chrome.storage.sync.set({'scbthidden14': false}, function() { window.scbtOptions.scbthidden14 = false; });
+      }
+    });
+  }
+
   // FEATURE
   var scbtfeature1 = document.getElementById('scbtfeature1'); // turn on basic keybinds
   if (scbtfeature1) {
@@ -1976,6 +2101,54 @@ function scbt_helper_get_options() {
       }
     }
 
+    if (items.scbthidden11) {
+      var scbthidden11 = document.getElementById('scbthidden11');
+      if (scbthidden11) {
+        scbthidden11.checked = items.scbthidden11;
+        window.scbtOptions.scbthidden11 = items.scbthidden11;
+        scbt_helper_get_sexual_json();
+      } else {
+        scbthidden11.checked = false;
+        window.scbtOptions.scbthidden11 = false;
+      }
+    }
+
+    if (items.scbthidden12) {
+      var scbthidden12 = document.getElementById('scbthidden12');
+      if (scbthidden12) {
+        scbthidden12.checked = items.scbthidden12;
+        window.scbtOptions.scbthidden12 = items.scbthidden12;
+        scbt_helper_get_profanity_json();
+      } else {
+        scbthidden12.checked = false;
+        window.scbtOptions.scbthidden12 = false;
+      }
+    }
+
+    if (items.scbthidden13) {
+      var scbthidden13 = document.getElementById('scbthidden13');
+      if (scbthidden13) {
+        scbthidden13.checked = items.scbthidden13;
+        window.scbtOptions.scbthidden13 = items.scbthidden13;
+        scbt_helper_get_political_json();
+      } else {
+        scbthidden13.checked = false;
+        window.scbtOptions.scbthidden13 = false;
+      }
+    }
+
+    if (items.scbthidden14) {
+      var scbthidden14 = document.getElementById('scbthidden14');
+      if (scbthidden14) {
+        scbthidden14.checked = items.scbthidden14;
+        window.scbtOptions.scbthidden14 = items.scbthidden14;
+        scbt_helper_get_negative_json();
+      } else {
+        scbthidden14.checked = false;
+        window.scbtOptions.scbthidden14 = false;
+      }
+    }
+
     if (items.scbtfeature1) {
       var scbtfeature1 = document.getElementById('scbtfeature1');
       if (scbtfeature1) {
@@ -2269,6 +2442,71 @@ function scbt_helper_get_social_media_json(app) {
   .then((json) => scbt_helper_share_build_items(json, app) );
 }
 
+function scbt_helper_get_sexual_json() {
+  var url = chrome.runtime.getURL('./sexualterms.json');
+  fetch(url)
+  .then((response) => response.json())
+  .then((json) => scbt_helper_save_word_list(json, 'sexualterms') );
+}
+
+function scbt_helper_get_profanity_json() {
+  var url = chrome.runtime.getURL('./profanity.json');
+  fetch(url)
+  .then((response) => response.json())
+  .then((json) => scbt_helper_save_word_list(json, 'profanity') );
+}
+
+function scbt_helper_get_political_json() {
+  var url = chrome.runtime.getURL('./political.json');
+  fetch(url)
+  .then((response) => response.json())
+  .then((json) => scbt_helper_save_word_list(json, 'political') );
+}
+
+function scbt_helper_get_negative_json() {
+  var url = chrome.runtime.getURL('./negative.json');
+  fetch(url)
+  .then((response) => response.json())
+  .then((json) => scbt_helper_save_word_list(json, 'negative') );
+}
+
+
+function scbt_helper_save_word_list(json, listType) {
+  if (listType == 'sexualterms') {
+    window.scbtOptions.sexualterms = json;
+    if (window.scbtOptions.sexualterms && typeof window.scbtOptions.sexualterms == 'object') {
+        Object.entries(window.scbtOptions.sexualterms).forEach((entry) => {
+        window.scbtBlockedWords.push(entry[1]);
+      });
+    }
+  }
+  if (listType == 'profanity') {
+    window.scbtOptions.profanity = json;
+    if (window.scbtOptions.profanity && typeof window.scbtOptions.profanity == 'object') {
+      Object.entries(window.scbtOptions.profanity).forEach((entry) => {
+        window.scbtBlockedWords.push(entry[1]);
+      });
+    }
+  }
+  if (listType == 'political') {
+    window.scbtOptions.political = json;
+    if (window.scbtOptions.political && typeof window.scbtOptions.political == 'object') {
+      Object.entries(window.scbtOptions.political).forEach((entry) => {
+        window.scbtBlockedWords.push(entry[1]);
+      });
+    }
+  }
+  if (listType == 'negative') {
+    window.scbtOptions.negative = json;
+    if (window.scbtOptions.negative && typeof window.scbtOptions.negative == 'object') {
+      Object.entries(window.scbtOptions.negative).forEach((entry) => {
+        window.scbtBlockedWords.push(entry[1]);
+      });
+    }
+  }
+  var json = listType = entry = null; return false;
+}
+
 
 function scbt_helper_insert_name_into_chat_click_handler(e) {
   if (e) {
@@ -2344,7 +2582,7 @@ function scbt_helper_save_chat_line(div, onLoading) {
     obj.isHighlighted = false;
     obj.isMuted = false;
     obj.isHidden = false;
-    obj.timestamp = 123;
+    obj.timestamp = '0:10';
     obj.sub = 0;
     obj.moderator = 0;
     obj.owner = 0;
@@ -2353,14 +2591,20 @@ function scbt_helper_save_chat_line(div, onLoading) {
     obj.verified = 0;
     obj.mention = 0;
     obj.isBot = 0;
+    obj.gifter = 0;
+    obj.founder = 0;
+    obj.og = 0;
 
     obj = scbt_helper_chat_clean(obj, div);
 
+    if (window.scbtOptions.scbthidden9) {
+      obj = scbt_helper_chat_filter_blocked_links(obj, div);
+    }
     if (window.scbtOptions.scbthidden7) {
-      scbt_helper_chat_filter_blocked_words(obj, div);
+      obj = scbt_helper_chat_filter_blocked_words(obj, div);
     }
     if (window.scbtOptions.scbthighlighted7) {
-      scbt_helper_chat_filter_highlighted_words(obj, div);
+      obj = scbt_helper_chat_filter_highlighted_words(obj, div);
     }
     if (window.scbtOptions.scbthighlighted6) {
       obj = scbt_helper_chat_filter_vip_words(obj, div);
@@ -2599,10 +2843,9 @@ function scbt_helper_share_populate(toShare) {
 
 
 function scbt_helper_toast(theText) {
-  console.log("doing scbt_helper_toast with text " + theText);
   window.scbtSnackbarRef.innerText = theText;
   window.scbtSnackbarRef.className = 'show';
-  setTimeout(function(){ window.scbtSnackbarRef.className = window.scbtSnackbarRef.className.replace('show', ''); }, 2000);
+  setTimeout(function(){ window.scbtSnackbarRef.className = window.scbtSnackbarRef.className.replace('show', ''); }, 2500);
   return false;
 }
 
@@ -2794,10 +3037,10 @@ function scbt_user_chat_delete_by_video_id(e) {
     e = null; dbName = null; DBOpenRequest = null; db = null; req = null; 
   }
   DBDeleteReq.onerror = function () {
-      setTimeout(function(){ scbt_helper_toast('Could not delete stream chat'); }, 2000);
+      setTimeout(function(){ scbt_helper_toast('Error: Could not delete stream chat'); }, 2000);
   };
   DBDeleteReq.onblocked = function () {
-      setTimeout(function(){ scbt_helper_toast('Could not delete stream chat - blocked'); }, 2000);
+      setTimeout(function(){ scbt_helper_toast('Error: Could not delete stream chat - blocked'); }, 2000);
   };
   return false;
 }
@@ -2829,7 +3072,7 @@ function scbt_user_chat_export_by_video_id(e) {
       if (chats.length > 0) {
         chats = scbt_get_sort_times(chats);
         var output = [];
-        var titles = 'initial, message, itemid, timestamp, username, sub, moderator, owner, donation, newSub, VIP, id';
+        var titles = 'initial, message, itemid, timestamp, username, sub, moderator, owner, donation, newSub, VIP, gifter, founder, og, id';
         output.push(titles);
         output.push('\n');
         
@@ -2857,6 +3100,9 @@ function scbt_user_chat_export_by_video_id(e) {
             row = row + item.donation + ',';
             row = row + item.newSub + ',';
             row = row + item.verified + ',';
+            row = row + item.gifter + ',';
+            row = row + item.founder + ',';
+            row = row + item.og + ',';
             row = row + item.id;
 
             output.push(row);
@@ -2872,7 +3118,7 @@ function scbt_user_chat_export_by_video_id(e) {
         scbt_helper_csv_download(blob, csvName);
         csvString = null; blob = null; request = null; chats = null; classString = null; newElement = null; db = null;
       } else {
-        scbt_helper_toast(' this stream chat not found for display');
+        scbt_helper_toast('Error: this stream chat not found for display');
       }
       
     };
@@ -2924,17 +3170,31 @@ function scbt_user_chat_font_size() {
 
 window.isdoFullScreenWidth = 0;
 function scbt_user_chat_full_screen_width() {
-  
     if (window.isdoFullScreenWidth === 0) {
+      var x = document.querySelectorAll("[data-a-target='right-column__toggle-collapse-btn']");
+      if (x[0]) {
+        x[0].click();  
+      }
+      var y = document.querySelectorAll('.side-nav');
+      if (y[0]) {
+        y[0].style.display = 'none';
+      }
       window.isdoFullScreenWidth = 1;
       x = null; return false;
     }
 
     if (window.isdoFullScreenWidth === 1) {
+      var x = document.querySelectorAll("[data-a-target='right-column__toggle-collapse-btn']");
+      if (x[0]) {
+        x[0].click();  
+      }
+      var y = document.querySelectorAll('.side-nav');
+      if (y[0]) {
+         y[0].style.display = 'block';
+      }
       window.isdoFullScreenWidth = 0;
       x = null; return false;
     }
-
 }
 
 
@@ -3638,7 +3898,7 @@ function scbt_user_search_multiple_saved_chat(e) {
                       }
 
                     } else {
-                      scbt_helper_toast(' this stream chat not found for display');
+                      scbt_helper_toast('Error: this stream chat not found for display');
                     }
                   }
                 }
@@ -3781,7 +4041,7 @@ function scbt_user_search_saved_chat(e) {
               }
 
             } else {
-              scbt_helper_toast(' this stream chat not found for display');
+              scbt_helper_toast('Error: this stream chat not found for display');
             }
           }
         }
@@ -4334,7 +4594,7 @@ function scbt_user_toggle_menu(element, dType) {
       setTimeout(function(){ document.body.scrollTop = 0; document.documentElement.scrollTop = 0; }, 1500);
     }
   } else {
-    setTimeout(function(){ scbt_helper_toast('Please refresh page to fix menu'); }, 1500);
+    setTimeout(function(){ scbt_helper_toast('Error: Please refresh page to fix menu'); }, 1500);
   }
   element = null; dType = null; id = null; x = null; return false;
 }
@@ -4559,7 +4819,6 @@ function scbt_user_turn_on_voice_commands() {
       window.recognition.interimResults = false;
       window.recognition.maxAlternatives = 1;
       window.recognition.start();
-      console.log('sctb_turn_on_voice_commands');
 
       window.recognition.onresult = function(event) {
         console.log("speech result");
@@ -4892,7 +5151,7 @@ function scbt_user_save_social_options() {
   }
 
   window.scbtSocialSubmitButtonRef.textContent = 'Social settings saved.';
-  scbt_helper_toast('Social settings saved.');
+  scbt_helper_toast('Status: Social settings saved.');
   setTimeout(function() {
     window.scbtSocialSubmitButtonRef.textContent = 'Save Social';
     return false;
@@ -4927,6 +5186,10 @@ function scbt_start_setup() {
       window.scbtAutoShowingOn = false;
       window.scbtisVOD = false;
       window.scbtFontUp = 1;
+
+      if ( window.hasOwnProperty('scbtArrayOfIds') ) {  } else { window.scbtArrayOfIds = []; }
+      if ( window.hasOwnProperty('scbtUniqueMessageIds') ) {  } else { window.scbtUniqueMessageIds = []; }
+      if ( window.hasOwnProperty('scbtBlockedWords') ) {  } else { window.scbtBlockedWords = []; }
 
       setTimeout(function() {
         window.scbtMentionMenuRef = window.scbtXRef;
