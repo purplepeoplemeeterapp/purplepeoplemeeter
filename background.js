@@ -3,7 +3,7 @@ chrome.tabs.onUpdated.addListener(function (tabId, info, tab) {
   
   chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
     var activeTab = tabs[0];
-    chrome.tabs.sendMessage(activeTab.id, { "message": activeTab }, function(response) { return true; });
+    chrome.tabs.sendMessage(activeTab.id, { "tabUpdated": activeTab }, function(response) { return true; });
   });
 
   if (info.status === 'complete') {
@@ -15,7 +15,7 @@ chrome.tabs.onUpdated.addListener(function (tabId, info, tab) {
     setTimeout(function() {
       chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
         var activeTab = tabs[0];
-        chrome.tabs.sendMessage(activeTab.id, {"message": "purplepeoplemeeterchatloaded"}, function(response) { return true; });
+        chrome.tabs.sendMessage(activeTab.id, {"chatloaded": "purplepeoplemeeterchatloaded"}, function(response) { return true; });
         chrome.runtime.setUninstallURL('https://purplepeoplemeeterapp.github.io/uninstall');
       });
     }, 1000);
@@ -26,8 +26,8 @@ chrome.tabs.onUpdated.addListener(function (tabId, info, tab) {
 chrome.action.onClicked.addListener((tab) => {
   chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
     var activeTab = tabs[0];
-    chrome.tabs.sendMessage(activeTab.id, { "message": "clicked" }, function(response) { return true; });
-    chrome.tabs.sendMessage(activeTab.id, { "message": activeTab }, function(response) { return true; });
+    chrome.tabs.sendMessage(activeTab.id, { "clickedmessage": "clicked" }, function(response) { return true; });
+    chrome.tabs.sendMessage(activeTab.id, { "clickedTab": activeTab }, function(response) { return true; });
   });
 
   chrome.scripting.executeScript({
