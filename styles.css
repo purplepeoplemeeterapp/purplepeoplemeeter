@@ -6,7 +6,7 @@
      top: 0px;
      height: 50px;
      width: 50px;
-     background: rgb(83, 252, 24);
+     background: rgb(145, 71, 255);
      font-size: xx-large;
      color: silver;
      line-height: 0.5rem;
@@ -47,7 +47,7 @@
 .scbtOptionsSavedWrapper .round-button:active, 
 .scbtOptionsSavedWrapper .round-button.focused
 {
-     background: lawngreen !important;
+     background: rgb(145, 71, 255) !important;
 }
 
 .scbt-options-wrapper, 
@@ -96,7 +96,7 @@
 .scbtCloseButton,
 .scbtChatMenu button,
 .scbtOptionsMenu button,
-.scbt-kick .scbt-speed li,
+.scbt-options-title
 {
     cursor: pointer;
 }
@@ -272,7 +272,7 @@
 }
 
 .scbt-desktop .scbtSideMenu button, .scbt-desktop .scbtChatToggleMenu button {
-     font-size: 1.25rem;
+     font-size: 1.66rem;
      width: fit-content;
 }
 
@@ -311,10 +311,10 @@
 }
  
 .scbtOptionsMenuForm > div::-webkit-scrollbar-thumb {
-  background: lawngreen; 
+  background: rgb(145, 71, 255); 
   border-radius: 10px;
 }
 
 .scbtOptionsMenuForm > div::-webkit-scrollbar-thumb:hover {
-  background: darkgreen; 
+  background: rgb(92, 22, 197); 
 }

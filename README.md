@@ -1,5 +1,5 @@
 <!-- /* Copyright 2023 biolithic. All rights reserved. */ -->
-## Purple People Meeter browser extension for computers and mobile devices 1.0.0
+## Purple People Meeter browser extension for computers and mobile devices 2.0.0
 
 ## Welcome!
 

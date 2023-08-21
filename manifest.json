@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "Purple People Meeter",
-    "version": "1.0.2",
+    "version": "2.0.0",
 
     "action": {
       "default_title": "Click to open the Purple People Meeter menu to configure this live stream"
@@ -35,7 +35,7 @@
     },
     "cross_origin_opener_policy": {"value": "same-origin"},
     "current_locale": "en",
-    "homepage_url": "https://purplepeoplemeeterapp.github.io",
+    "homepage_url": "https://PurplePeopleMeeterApp.github.io",
     "author": "biolithic",
     "offline_enabled": true,
     "options_page": "settings/settings.html",
