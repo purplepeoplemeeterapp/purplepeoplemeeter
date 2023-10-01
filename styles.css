@@ -161,7 +161,7 @@
 .scbtSideMenu button, .scbtChatToggleMenu button {
     display: inline-block;
     width: 40px;
-    height: 45px;
+    height: 35px;
     font-size: 1.75rem;
 }
 
@@ -215,7 +215,7 @@
      position: absolute;
      top: 350px;
      right: 0px;
-     z-index: 1000;
+     z-index: 100000;
      min-width: fit-content;
      width: 100%;
      background: lightgrey;
@@ -268,7 +268,7 @@
 }
 
 .scbt-desktop .scbtChatToggleMenu {
-     top: 45px;
+     top: 35px;
 }
 
 .scbt-desktop .scbtSideMenu button, .scbt-desktop .scbtChatToggleMenu button {
@@ -317,4 +317,51 @@
 
 .scbtOptionsMenuForm > div::-webkit-scrollbar-thumb:hover {
   background: rgb(92, 22, 197); 
+}
+
+.scbtOptionsSavedWrapper button {
+    background-color: var(--color-background-button-primary-default);
+    color: var(--color-text-button-primary);    
+    margin-bottom: 2rem;
+}
+
+.scbtOptionsSavedWrapper button:hover, .scbtOptionsSavedWrapper button:active, .scbtOptionsSavedWrapper button:focus {
+    background-color: var(--color-background-button-primary-hover);
+}
+
+.scbt-twitch .scbtChatPreviousContent p, .scbt-twitch .scbtChatPreviousContent button {
+    display: block;
+    clear: both;
+}
+
+.fill-height-or-more {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.fill-height-or-more > div {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  max-height: 150px;
+  overflow-y: scroll;
+}
+.some-area > div {
+  border-bottom: 1px solid black;
+}
+.some-area > div:nth-child(even) {
+  
+}
+.some-area > div:nth-child(odd) {
+  
+}
+.some-area > div p {
+  margin: 0;
+}
+.fill-height-or-more {
+    width: 0px;
+}
+.fill-height-or-more.has-content {
+    width: fit-content;
 }
