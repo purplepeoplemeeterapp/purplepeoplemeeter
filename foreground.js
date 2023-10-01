@@ -2792,11 +2792,11 @@ async function scbt_user_search_for_saved_chat() {
       var e = {};
       e.srcElement = {};
       e.srcElement.dataset = {};
-      e.srcElement.dataset.dbname = str;
+      e.srcElement.dataset.dbname = dbStr;
       scbt_user_chat_load_by_videoid(e);
       return false;
     }    
-    scbt_helper_load_local_chat_from_api(serviceidStr, channelidStr, videoidStr);
+   //  scbt_helper_load_local_chat_from_api(serviceidStr, channelidStr, videoidStr);
   }
   
   if (serviceidStr && channelidStr && videoidStr) {
@@ -4901,6 +4901,7 @@ function scbt_user_chat_load_by_videoid(e) {
   if (!e.srcElement) { return false; }
   if (!e.srcElement.dataset) { return false; }
   if (!e.srcElement.dataset.dbname) { return false; }
+  if (e.preventDefault) { e.preventDefault(); }
   
   scbt_helper_build_chat_by_dbname_string(e.srcElement.dataset.dbname);
 
@@ -5509,7 +5510,7 @@ function scbt_helper_chat_clean(obj, elem) {
   obj.timestamp = timestamp;
 
   var classArr = elem.classList;
-  if (classArr.contains('user-notice-line') ) {
+  if (classArr.contains('user-notice-line') || classArr.contains('donation') || classArr.contains('anevent') ) {
     obj.anevent = 1;
   }
   if (classArr.contains('sub') ) {
@@ -5524,7 +5525,7 @@ function scbt_helper_chat_clean(obj, elem) {
   if ( classArr.contains('vip') || classArr.contains('verified') ) {
     obj.verified = 1;
   }
-  if (classArr.contains('broadcaster') ) {
+  if (classArr.contains('owner') ) {
     obj.owner = 1;
   }
   if (classArr.contains('staff') ) {
